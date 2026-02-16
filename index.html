@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ataque XSS - Demostración</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header>
+		<h1>Práctica 1 - Ataque XSS</h1>
+		<p>Diferencia entre procesar datos vulnerables y datos saneados en un formulario sencillo.</p>
+	</header>
+
+	<main>
+		<section class="card">
+			<h2>Formulario de prueba</h2>
+			<p>Introduce un fragmento de texto o HTML</p>
+
+			<label for="payload">Entrada del usuario</label>
+			<textarea id="payload" placeholder="Ejemplo: &lt;img src=x onerror=alert('XSS')&gt;"></textarea>
+
+			<div class="actions">
+				<button class="btn-danger" onclick="mostrarVulnerable()">Procesar sin sanear contenido (vulnerable)</button>
+				<button class="btn-safe" onclick="mostrarSeguro()">Procesar saneando el contenido (seguro)</button>
+			</div>
+
+			<div class="results">
+				<div class="panel">
+					<h3>Salida vulnerable (innerHTML)</h3>
+					<div id="resultadoVulnerable">Sin datos todavía.</div>
+				</div>
+				<div class="panel">
+					<h3>Salida segura (textContent + encode)</h3>
+					<div id="resultadoSeguro">Sin datos todavía.</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="card payloads">
+			<h2>Ejemplos de prueba</h2>
+			<p>Estos ejemplos sirven para poner en evidencia la diferencia entre ambos botones.</p>
+			<ul>
+				<li>Alerta básica:<code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></li>
+				<li>Evento onerror:<code>&lt;img src=x onerror="alert('XSS ejecutado')"&gt;</code></li>
+				<li>Exfiltración de cookies:<code>&lt;img src=x onerror="alert(document.cookie)"&gt;</code></li>
+				<li>Redirección forzada:<code>&lt;img src=x onerror="window.location='https://google.com'"&gt;</code></li>
+			</ul>
+		</section>
+
+		<section class="card">
+			<h2>Claves del desarrollo</h2>
+			<ul>
+				<li><strong>Problema:</strong> el uso de <span class="badge badge-risk">innerHTML</span> inserta texto como HTML y ejecuta scripts o eventos.</li>
+				<li><strong>Impacto:</strong> el atacante puede ejecutar código arbitrario, robar sesiones o redirigir usuarios.</li>
+				<li><strong>Mitigación:</strong> mostrar datos con <span class="badge badge-safe">textContent</span> o sanitizar manualmente el contenido.</li>
+				<li><strong>Buenas prácticas adicionales:</strong> Content Security Policy, validación server-side, librerías con auto-saneo.</li>
+			</ul>
+		</section>
+	</main>
+
+	<footer>
+		Seguridad de la Información · Tema 1 - Tipos de ataques más comunes · Práctica 1 - Ataque XSS · Curso 2025-2026
+	</footer>
+
+	<script>
+		const resultadoVulnerable = document.getElementById('resultadoVulnerable');
+		const resultadoSeguro = document.getElementById('resultadoSeguro');
+
+		function mostrarVulnerable() {
+			const input = document.getElementById('payload').value || 'Sin texto';
+			resultadoVulnerable.innerHTML = 'Respuesta: ' + input;
+		}
+
+		function mostrarSeguro() {
+			const input = document.getElementById('payload').value || 'Sin texto';
+			const saneado = escapeHTML(input);
+			resultadoSeguro.textContent = 'Respuesta: ' + saneado;
+		}
+
+		function escapeHTML(text) {
+			return text
+				.replaceAll('&', '&amp;')
+				.replaceAll('<', '&lt;')
+				.replaceAll('>', '&gt;')
+				.replaceAll('"', '&quot;')
+				.replaceAll("'", '&#39;');
+		}
+	</script>
+</body>
+</html>
